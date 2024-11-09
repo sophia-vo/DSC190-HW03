@@ -1,0 +1,2 @@
+hcmv <- read.table("hcmv.txt", header = TRUE, sep="")
+hcmv
