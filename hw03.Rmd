@@ -1,5 +1,5 @@
 ---
-title: "Video Game Habits Among UC Berkeley Statistics Students"
+title: "title"
 output: pdf_document
 date: "2024-11-10"
 ---
