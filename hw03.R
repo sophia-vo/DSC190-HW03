@@ -151,3 +151,43 @@ results <- lapply(region_lengths, analyze_palindromes)
 
 
 # Question 4 - The Biggest Cluster ----------------------------------------
+
+# Function to identify high palindrome density regions at different interval lengths
+analyze_palindromic_clusters <- function(region_length) {
+  # Define the region breaks
+  region_breaks <- seq(1, sequence_length, by = region_length)
+  
+  # Initialize counts for each interval to zero
+  num_intervals <- length(region_breaks) - 1
+  counts_vector <- rep(0, num_intervals)
+  
+  # Count palindromes in each interval, using labels = FALSE to get numeric indices
+  region_indices <- cut(hcmv$location, breaks = region_breaks, include.lowest = TRUE, labels = FALSE)
+  counts <- table(region_indices)
+  
+  # Populate counts_vector with actual counts based on region indices
+  counts_vector[as.numeric(names(counts))] <- as.vector(counts)
+  
+  # Find the interval with the highest palindrome count
+  max_count <- max(counts_vector)
+  max_interval <- which(counts_vector == max_count)
+  
+  # Expected count per interval under uniform distribution
+  expected_count <- length(hcmv$location) / num_intervals
+  
+  # Print the interval and count information
+  print(paste("Region length:", region_length))
+  print(paste("Max palindrome count:", max_count))
+  print(paste("Expected count:", expected_count))
+  print(paste("Interval with max count:", max_interval))
+  
+  # Statistical test to check if max count significantly deviates from expectation
+  chi_square_test <- chisq.test(counts_vector, p = rep(1 / num_intervals, num_intervals), simulate.p.value = TRUE)
+  print(paste("Chi-square p-value for region length", region_length, ":", chi_square_test$p.value))
+  
+  return(list(max_count = max_count, max_interval = max_interval, p_value = chi_square_test$p.value))
+}
+
+# Analyze at multiple region lengths
+region_lengths <- c(500, 1000, 2000, 5000)
+results <- lapply(region_lengths, analyze_palindromic_clusters)
