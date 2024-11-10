@@ -7,6 +7,8 @@ date: "2024-11-10"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 hcmv_data <- read.table("hcmv.txt", header = TRUE, sep="")
+sequence_length <- 229354
+num_palindromes <- 296
 ```
 
 ## Contribution
@@ -31,23 +33,99 @@ hcmv_data <- read.table("hcmv.txt", header = TRUE, sep="")
 
 ### 2.2.3 Conclusion
 
-## 2.2 
-
-### 2.2.1 Methods
-
-### 2.2.2 Analysis
-
-### 2.2.3 Conclusion
-
-## 2.3 
+## 2.3 Counts
 
 ### 2.3.1 Methods
 
+To examine palindrome counts in different regions of DNA, we split the DNA sequence into equal-length, non-overlapping regions, counted the palindromic sequences in each, and compared these counts to those expected from a uniform random scatter. To visualize the results, we graphed histograms to visualize the distribution of palindrome counts across regions. We then used Chi-Square Goodness of Fit Tests to compare observed palindrome counts to expected counts, testing the hypothesis of a uniform random distribution of palindromic sequences across regions.
+
 ### 2.3.2 Analysis
+
+The histograms and Chi-Square Test results are shown below.
+
+```{r, echo=FALSE, fig.width=7, fig.height=3}
+region_lengths <- c(500, 1000, 5000, 10000, 20000, 50000)
+
+#Chi-Square Test Results Table
+chi_square_results <- data.frame(
+  `Region Length (bp)` = integer(),
+  `Chi-Square Statistic` = numeric(),
+  `Degrees of Freedom` = integer(),
+  `p-value` = numeric(),
+  `Interpretation` = character()
+)
+
+# Function for analyzing palindromes
+analyze_palindromes <- function(region_length) {
+  # Total number of non-overlapping regions
+  num_regions <- ceiling(sequence_length / region_length)
+  
+  # Define region breaks and count palindromes in each interval
+  region_breaks <- seq(1, sequence_length, by = region_length)
+  
+  # Count occurrences in each interval
+  region_indices <- cut(hcmv_data$location, breaks = region_breaks, include.lowest = TRUE, labels = FALSE)
+  counts <- table(region_indices)
+  
+  # Initialize counts vector with zeros for all regions
+  counts_vector <- rep(0, num_regions)
+  
+  # Fill counts_vector based on the numeric indices
+  counts_vector[as.numeric(names(counts))] <- as.vector(counts)
+  
+  # Expected count per region under uniform distribution
+  expected_count <- length(hcmv_data$location) / num_regions
+  
+  hist(counts_vector, 
+       breaks = seq(-0.5, max(counts_vector) + 0.5, by = 1),
+       col = "blue", 
+       border = "black", 
+       main = paste("Palindrome Count Distribution for Region Length =", region_length),
+       xlab = "Number of Palindromes per Region", 
+       ylab = "Frequency")
+  abline(v = expected_count, col = "red", lty = "dashed")
+  
+  # Classify regions by number of palindromes
+  classified_counts <- table(cut(counts_vector, breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, Inf), include.lowest = TRUE))
+
+  # Chi-square test comparing observed to expected uniform distribution
+  chi_square_test <- chisq.test(counts_vector, p = rep(1 / num_regions, num_regions))
+  
+  interpretation <- ifelse(chi_square_test$p.value < 0.001, 
+                           "Significant",
+                           "Not Significant")
+
+  chi_square_results <<- rbind(
+    chi_square_results,
+    data.frame(
+      `Region Length (bp)` = region_length,
+      `Chi-Square Statistic` = chi_square_test$statistic,
+      `Degrees of Freedom` = chi_square_test$parameter,
+      `p-value` = chi_square_test$p.value,
+      `Interpretation` = interpretation
+    )
+  )
+  
+  return(counts_vector)
+}
+
+# Analyze for different region lengths
+region_lengths <- c(500, 1000, 5000, 10000, 20000, 50000)
+results <- lapply(region_lengths, analyze_palindromes)
+
+library(knitr)
+library(kableExtra)
+
+kable(chi_square_results, caption = "Chi-Square Test Results") %>%
+  kable_styling(latex_options = c("striped", "hold_position"), full_width = FALSE)
+```
+
 
 ### 2.3.3 Conclusion
 
-## 2.4 
+The histograms of palindrome counts revealed that the smaller the region length, the more right skewed the count histogram was, which indicates that shorter regions have a higher frequency of intervals with low or zero palindrome counts, while a few regions have unusually high counts. This is consistent with the idea that smaller regions are more susceptible to variability in palindrome counts. Using a cut-off value of 0.001, the chi-square tests yield significant p-values for very small and very high region lengths, but insignificant p-values for middle region lengths. The significant result at region length 500 suggests that palindromic sequences are clustered in certain small regions rather than being uniformly scattered across the DNA. The non-significant results at the intermediate scales (region lengths 1,000, 5,000, and 10,000) imply that, when viewed at these sizes, the distribution of palindromic sequences appears more uniform. At these lengths, local clusters of palindromic sequences are likely averaged out, resulting in counts that are more consistent with a uniform random distribution. The significant results at region lengths 20,000 and 50,000 indicate that there are larger-scale structural or organizational patterns in the distribution of palindromic sequences across broad DNA segments.
+
+## 2.4 The Biggest Cluster
 
 ### 2.4.1 Methods
 
