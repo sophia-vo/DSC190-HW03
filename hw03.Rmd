@@ -6,6 +6,8 @@ date: "2024-11-10"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
 hcmv_data <- read.table("hcmv.txt", header = TRUE, sep="")
 sequence_length <- 229354
 num_palindromes <- 296
@@ -33,7 +35,7 @@ num_palindromes <- 296
 
 ### 2.2.3 Conclusion
 
-## 2.3 Counts
+## 2.3 Palindrome Counts
 
 ### 2.3.1 Methods
 
@@ -48,9 +50,8 @@ region_lengths <- c(500, 1000, 5000, 10000, 20000, 50000)
 
 #Chi-Square Test Results Table
 chi_square_results <- data.frame(
-  `Region Length (bp)` = integer(),
+  `Region Length` = integer(),
   `Chi-Square Statistic` = numeric(),
-  `Degrees of Freedom` = integer(),
   `p-value` = numeric(),
   `Interpretation` = character()
 )
@@ -89,7 +90,7 @@ analyze_palindromes <- function(region_length) {
   classified_counts <- table(cut(counts_vector, breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, Inf), include.lowest = TRUE))
 
   # Chi-square test comparing observed to expected uniform distribution
-  chi_square_test <- chisq.test(counts_vector, p = rep(1 / num_regions, num_regions))
+  chi_square_test <- chisq.test(counts_vector, p = rep(1 / num_regions, num_regions), simulate.p.value = TRUE)
   
   interpretation <- ifelse(chi_square_test$p.value < 0.001, 
                            "Significant",
@@ -98,9 +99,8 @@ analyze_palindromes <- function(region_length) {
   chi_square_results <<- rbind(
     chi_square_results,
     data.frame(
-      `Region Length (bp)` = region_length,
+      `Region Length` = region_length,
       `Chi-Square Statistic` = chi_square_test$statistic,
-      `Degrees of Freedom` = chi_square_test$parameter,
       `p-value` = chi_square_test$p.value,
       `Interpretation` = interpretation
     )
@@ -112,9 +112,6 @@ analyze_palindromes <- function(region_length) {
 # Analyze for different region lengths
 region_lengths <- c(500, 1000, 5000, 10000, 20000, 50000)
 results <- lapply(region_lengths, analyze_palindromes)
-
-library(knitr)
-library(kableExtra)
 
 kable(chi_square_results, caption = "Chi-Square Test Results") %>%
   kable_styling(latex_options = c("striped", "hold_position"), full_width = FALSE)
@@ -129,9 +126,79 @@ The histograms of palindrome counts revealed that the smaller the region length,
 
 ### 2.4.1 Methods
 
+We now want to investigate whether the interval with the highest number of palindromic sequences in a DNA sequence could suggest a potential origin of replication. To do this, we determined if a high-count palindrome cluster deviates significantly from a random scatter and whether such clusters align with features characteristic of origins of replication. Based on prior analysis, region lengths were selected to avoid both overly large and overly small intervals. Small intervals risk splitting clusters across adjacent regions, while large intervals may obscure tight clusters. For each interval, the number of palindromic sequences was counted, yielding a distribution of palindrome counts across intervals and the interval with the highest count of palindromic sequences was identified. Finally, Chi-square goodness of fit tests were applied to determine if the palindrome count in the highest-count interval deviates significantly from expected counts under a random distribution. Histograms were generated to visualize palindrome counts across intervals.
+
 ### 2.4.2 Analysis
 
+The results of the Chi-Square Tests across different region lengths is shown below.
+
+```{r, echo=FALSE, fig.width=7, fid.height=3}
+
+# Define region lengths to test
+region_lengths <- c(500, 1000, 5000, 10000, 20000, 50000)
+
+# Data frame to store analysis results
+palindrome_cluster_results <- data.frame(
+  `Region Length` = integer(),
+  `Max Count` = numeric(),
+  `Max Interval` = integer(),
+  `Expected Count` = numeric(),
+  `Chi-Square p-value` = numeric(),
+  `Interpretation` = character()
+)
+
+# Function to analyze palindromic clusters and store results
+analyze_palindromic_clusters <- function(region_length) {
+  # Define the region breaks
+  region_breaks <- seq(1, sequence_length, by = region_length)
+  num_intervals <- length(region_breaks) - 1
+  
+  # Initialize counts vector for each interval
+  counts_vector <- rep(0, num_intervals)
+  
+  # Count palindromes in each interval
+  region_indices <- cut(hcmv_data$location, breaks = region_breaks, include.lowest = TRUE, labels = FALSE)
+  counts <- table(region_indices)
+  counts_vector[as.numeric(names(counts))] <- as.vector(counts)
+  
+  # Find the maximum palindrome count and its interval
+  max_count <- max(counts_vector)
+  max_interval <- which(counts_vector == max_count)
+  
+  # Expected count per interval under uniform distribution
+  expected_count <- length(hcmv_data$location) / num_intervals
+  
+  # Chi-square test for uniform distribution
+  chi_square_test <- chisq.test(counts_vector, p = rep(1 / num_intervals, num_intervals), simulate.p.value = TRUE)
+  interpretation <- ifelse(chi_square_test$p.value < 0.001, 
+                           "Significant", 
+                           "Not Significant")
+
+  # Append the results to the palindrome_cluster_results data frame
+  palindrome_cluster_results <<- rbind(
+    palindrome_cluster_results,
+    data.frame(
+      `Region Length` = region_length,
+      `Max Count` = max_count,
+      `Max Interval` = max_interval,
+      `Expected Count` = expected_count,
+      `Chi-Square p-value` = chi_square_test$p.value,
+      `Interpretation` = interpretation
+    )
+  )
+}
+
+# Analyze for each region length and store results
+results <- lapply(region_lengths, analyze_palindromic_clusters)
+
+kable(palindrome_cluster_results, caption = "Chi-Square Test Results") %>%
+  kable_styling(latex_options = c("striped", "hold_position"), full_width = FALSE)
+
+```
+
 ### 2.4.3 Conclusion
+
+As shown in the table above, only the smallest region length (500) showed a significant p-value, while the larger region lengths (1000, 5000, 10000, 20000, and 50000) did not. This suggests that clustering of palindromic sequences exists on a small scale but not over broader intervals. The presence of a high number of palindromic sequences within an interval suggests non-random clustering, which may signal biological importance. Since the statistical analysis shows that the count in this interval is significantly higher than expected by chance, this could imply functional relevance, such as a replication origin.
 
 ## 2.5 
 
