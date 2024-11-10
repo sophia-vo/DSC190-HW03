@@ -11,7 +11,7 @@ interval_size <- 1000
 hist(hcmv$location, breaks = 25, probability = TRUE, col = rgb(1, 0, 0, 0.25),
      main = "Palindromic Sites of Real Data",
      xlab = "Location in DNA Sequence")
-lines(density(hcmv$location, adjust = 2), col = 2)
+lines(density(hcmv$location, adjust = 1), col = 2)
 
 # Simulation of Uniform Distribution of Palindromic Sites
 set.seed(123)
@@ -20,27 +20,51 @@ simulated_palindromes <- runif(num_palindromes, min = 1, max = sequence_length)
 # Histogram of Simulated Data Palindromic Site Location
 hist(simulated_palindromes, breaks = 25, probability = TRUE, col = rgb(0,0,1,0.25), main = "Palindromic Sites of Simulated Data",
      xlab = "Location in DNA Sequence")
-lines(density(simulated_palindromes, adjust = 2), col = 4)
+lines(density(simulated_palindromes, adjust = 1), col = 4)
+
+simulated_palindromes_repeated <- replicate(4, sort(sample(1:sequence_length, num_palindromes, replace = TRUE)))
+
+# Plots a few random simulations for qualitative comparison
+hist(simulated_palindromes_repeated[,1], breaks = 100, probability = TRUE,
+     main = "Simulated Random Scatter of Palindromic Sites",
+     xlab = "Location in DNA Sequence")
+lines(density(simulated_palindromes_repeated[,1], adjust = 1))
+hist(simulated_palindromes_repeated[,2], breaks = 100, probability = TRUE,
+     main = "Simulated Random Scatter of Palindromic Sites",
+     xlab = "Location in DNA Sequence")
+lines(density(simulated_palindromes_repeated[,2], adjust = 1))
+hist(simulated_palindromes_repeated[,3], breaks = 100, probability = TRUE,
+     main = "Simulated Random Scatter of Palindromic Sites",
+     xlab = "Location in DNA Sequence")
+lines(density(simulated_palindromes_repeated[,3], adjust = 1))
+hist(simulated_palindromes_repeated[,4], breaks = 100, probability = TRUE,
+     main = "Simulated Random Scatter of Palindromic Sites",
+     xlab = "Location in DNA Sequence")
+lines(density(simulated_palindromes_repeated[,4], adjust = 1))
 
 # Layered Histogram for Graphical Comparison
 hist(hcmv$location, breaks = 25, probability = TRUE, col = rgb(1, 0, 0, 0.25),
      main = "Palindromic Sites of Real & Simulated Data",
      xlab = "Location in DNA Sequence")
-lines(density(hcmv$location, adjust = 2), col = 2)
+lines(density(hcmv$location, adjust = 1), col = 2)
 hist(simulated_palindromes, breaks = 25, probability = TRUE, col = rgb(0,0,1,0.25), add = TRUE)
-lines(density(simulated_palindromes, adjust = 2), col = 4)
+lines(density(simulated_palindromes, adjust = 1), col = 4)
 legend("topright", legend = c("Real", "Simulated"), fill = c(rgb(1, 0, 0, 0.25), rgb(0,0,1,0.25)), border = NA)
 
+# Grouping palindrome location in bins of 1000
 tab <- table(cut(hcmv$location, 
                      breaks = seq(from = 1, to = 230000, by = 1000), 
                      include.lowest = TRUE))
 counts <- as.vector(tab)
+print(table(counts))
 
 sim_tab <- table(cut(simulated_palindromes, 
                  breaks = seq(from = 1, to = 230000, by = 1000), 
                  include.lowest = TRUE))
 sim_counts <- as.vector(sim_tab)
+print(table(sim_counts))
 
+# Histogram of Counts in Each Interval
 hist(sim_counts, breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8), probability = TRUE, col = rgb(0, 0, 1, 0.25), main = "Real & Simulated Interval Counts", xlab = "number of points inside an interval", ylim = c(0,0.5))
 lines(density(sim_counts, adjust = 2), col = rgb(0,0,1,0.5))
 
@@ -49,19 +73,31 @@ lines(density(counts, adjust = 2), col = rgb(1,0,0,0.5))
 
 legend("topright", legend = c("Real", "Simulated"), fill = c(rgb(1, 0, 0, 0.25), rgb(0,0,1,0.25)), border = NA)
 
-# Calculate spacings and interval counts for each simulation
+# Calculate spacing for each simulation
 
-# Real data analysis
+# Real data
 real_spacing <- diff(hcmv$location)
 real_counts <- table(cut(hcmv$location, breaks = seq(0, sequence_length, by = interval_size), include.lowest = TRUE))
 
-# Simulated data analysis
+# Simulated data
 simulated_spacings <- diff(sort(simulated_palindromes))
 simulated_counts <- table(cut(simulated_palindromes, breaks = seq(0, sequence_length, by = interval_size), include.lowest = TRUE))
+
+# Spacing histograms
+hist(real_spacing, breaks = 30, col = rgb(1, 0,0,0.25), probability = TRUE, main = "Real & Simulated Data Spacing", xlab = "Spacing")
+hist(unlist(simulated_spacings), breaks = 20, probability = TRUE, col = rgb(0, 0, 1, 0.25), add = TRUE)
+lines(density(real_spacing, adjust = 1), col = rgb(1,0,0,0.5))
+lines(density(unlist(simulated_spacings), adjust = 1), col = rgb(0,0,1,0.5))
+legend("topright", legend = c("Real Data", "Simulated Data"),
+       fill = c(rgb(1, 0, 0, 0.25), rgb(0, 0, 1, 0.25)), border = NA)
 
 # Quantitative comparison
 mean_real_spacing <- mean(real_spacing)
 mean_simulated_spacing <- mean(unlist(simulated_spacings))
+mean(diff(simulated_palindromes_repeated[,1]))
+mean(diff(simulated_palindromes_repeated[,2]))
+mean(diff(simulated_palindromes_repeated[,3]))
+mean(diff(simulated_palindromes_repeated[,4]))
 
 var_real_spacing <- var(real_spacing)
 var_simulated_spacing <- var(unlist(simulated_spacings))
@@ -78,20 +114,10 @@ var_simulated_counts <- var(unlist(simulated_counts))
 std_real_counts <- sqrt(var_real_counts)
 std_simulated_counts <- sqrt(var_simulated_counts)
 
-# Visualization
-# Spacing histograms
-hist(real_spacing, breaks = 30, col = rgb(1, 0,0,0.25), probability = TRUE, main = "Real & Simulated Data Spacing", xlab = "Spacing")
-hist(unlist(simulated_spacings), breaks = 20, probability = TRUE, col = rgb(0, 0, 1, 0.25), add = TRUE)
-lines(density(real_spacing, adjust = 2), col = rgb(1,0,0,0.5))
-lines(density(unlist(simulated_spacings), adjust = 2), col = rgb(0,0,1,0.5))
-legend("topright", legend = c("Real Data", "Simulated Data"),
-       fill = c(rgb(1, 0, 0, 0.25), rgb(0, 0, 1, 0.25)), border = NA)
-
 # Question 2 - Locations and Spacings -------------------------------------
 
-hist(real_spacing, breaks = 30, col = rgb(1, 0,0,0.25), probability = TRUE, main = "Real Data Spacing", xlab = "Spacing")
+hist(real_spacing, breaks = 30, probability = TRUE, main = "Real Data Spacing", xlab = "Spacing")
 
-# Question 3 - Counts -----------------------------------------------------
 
 # intervals of 1000
 tab <- table(cut(hcmv$location, 
@@ -131,7 +157,7 @@ analyze_palindromes <- function(region_length) {
        main = paste("Palindrome Count Distribution for Region Length =", region_length),
        xlab = "Number of Palindromes per Region", 
        ylab = "Frequency")
-    abline(v = expected_count, col = "red", lty = "dashed")
+  abline(v = expected_count, col = "red", lty = "dashed")
   
   # Classify regions by number of palindromes
   classified_counts <- table(cut(counts_vector, breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, Inf), include.lowest = TRUE))
@@ -191,3 +217,105 @@ analyze_palindromic_clusters <- function(region_length) {
 # Analyze at multiple region lengths
 region_lengths <- c(500, 1000, 2000, 5000)
 results <- lapply(region_lengths, analyze_palindromic_clusters)
+
+# Advanced Analysis -------------------------------------------------------
+
+interval_sizes <- c(500, 1000, 5000, 10000)
+
+# Chi-square and Poisson test functions
+perform_chisq_test <- function(observed_counts, expected_counts) {
+  chisq_test <- chisq.test(observed_counts, p = expected_counts / sum(expected_counts), simulate.p.value = TRUE)
+  return(chisq_test$p.value)
+}
+
+p_values_chi <- numeric(length(interval_sizes))
+p_values_poisson <- numeric(length(interval_sizes))
+results_summary <- data.frame()
+
+# Loop over different interval sizes
+for (interval_size in interval_sizes) {
+  
+  # Real data: group counts by interval
+  real_counts <- table(cut(hcmv$location, 
+                           breaks = seq(from = 1, to = sequence_length, by = interval_size), 
+                           include.lowest = TRUE))
+
+  # Simulated data: group counts by interval
+  simulated_counts <- table(cut(simulated_palindromes, 
+                                breaks = seq(1, sequence_length, by = interval_size), 
+                                include.lowest = TRUE))
+  
+  # output results
+  print(interval_size)
+  print(table(real_counts))
+  print(table(simulated_counts))
+  
+  # Chi-square test on real vs expected under uniform distribution
+  expected_count <- rep(num_palindromes * interval_size / sequence_length, length(real_counts))
+  chi_p_value <- perform_chisq_test(as.vector(real_counts), expected_count)
+  
+  # Poisson test (mean assumed as expected count - Poisson)
+  observed_counts <- as.numeric(real_counts)
+  lambda <- mean(observed_counts)
+  poisson_p_value <- poisson.test(sum(observed_counts), T = length(real_counts), r = lambda)$p.value
+  
+  # results
+  results_summary <- rbind(results_summary, 
+                           data.frame(interval_size = interval_size,
+                                      mean_real_counts = mean(observed_counts),
+                                      mean_sim_counts = mean(simulated_counts),
+                                      var_real_counts = var(observed_counts),
+                                      var_sim_counts = var(simulated_counts),
+                                      chi_p_value = chi_p_value,
+                                      expected_count = expected_count[1],
+                                      poisson_p_value = poisson_p_value))
+  
+  # Histogram plot for counts
+  sim_density <- density(simulated_counts)
+  obs_density <- density(observed_counts)
+  y_max <- max(sim_density$y, obs_density$y) * 2
+  x_max <- max(sim_density$x, obs_density$x) * 1.1
+  
+  if (interval_size == 500) {
+    hist(simulated_counts, 
+         breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8), 
+         probability = TRUE, 
+         col = rgb(0, 0, 1, 0.25),
+         ylim = c(0, 0.6),
+         main = paste("Counts Distribution for Interval Size:", interval_size),
+         xlab = "Counts per Interval",
+         xlim = c(-1,x_max))
+    hist(observed_counts, breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8), col = rgb(1, 0, 0, 0.25), probability = TRUE, add = TRUE)
+  } else if (interval_size == 1000) {
+  # Plot the histograms with the same y-axis limit
+    hist(simulated_counts, ylim = c(0,0.4), breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8), probability = TRUE, col = rgb(0, 0, 1, 0.25), main = paste("Counts Distribution for Interval Size:", interval_size),
+         xlab = "Counts per Interval")
+    hist(counts, breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8), probability = TRUE, col = rgb(1, 0, 0, 0.25), add = TRUE)
+  } else if (interval_size == 5000) {
+    hist(simulated_counts, 
+         probability = TRUE, 
+         col = rgb(0, 0, 1, 0.25),
+         breaks = 5,
+         main = paste("Counts Distribution for Interval Size:", interval_size),
+         xlab = "Counts per Interval",
+         xlim = c(-1,20))
+    hist(observed_counts, breaks = 10, col = rgb(1, 0, 0, 0.25), probability = TRUE, add = TRUE)
+  } else {
+    hist(simulated_counts, 
+         probability = TRUE, 
+         col = rgb(0, 0, 1, 0.25),
+         ylim = c(0, 0.2),
+         breaks = 5,
+         main = paste("Counts Distribution for Interval Size:", interval_size),
+         xlab = "Counts per Interval",
+         xlim = c(0,25))
+    hist(observed_counts, breaks = 8, col = rgb(1, 0, 0, 0.25), probability = TRUE, add = TRUE)
+    
+  }
+  abline(v = expected_count[1], col = "red", lwd = 1, lty = 2)
+  legend("topright", legend = c("Real Data", "Simulated Data"),
+         fill = c(rgb(1, 0, 0, 0.25), rgb(0, 0, 1, 0.25)), border = NA)
+}
+
+# Display results summary
+print(results_summary)
