@@ -111,7 +111,7 @@ analyze_palindromes <- function(region_length) {
   # Define region breaks and count palindromes in each interval
   region_breaks <- seq(1, sequence_length, by = region_length)
   
-  # Count occurrences in each interval, using labels = FALSE to get numeric indices
+  # Count occurrences in each interval
   region_indices <- cut(hcmv$location, breaks = region_breaks, include.lowest = TRUE, labels = FALSE)
   counts <- table(region_indices)
   
@@ -125,7 +125,7 @@ analyze_palindromes <- function(region_length) {
   expected_count <- length(hcmv$location) / num_regions
   
   hist(counts_vector, 
-       breaks = seq(-0.5, max(counts_vector) + 0.5, by = 1),  # Set bin width to 1
+       breaks = seq(-0.5, max(counts_vector) + 0.5, by = 1),
        col = "blue", 
        border = "black", 
        main = paste("Palindrome Count Distribution for Region Length =", region_length),
@@ -142,7 +142,6 @@ analyze_palindromes <- function(region_length) {
   chi_square_test <- chisq.test(counts_vector, p = rep(1 / num_regions, num_regions))
   print(paste("Chi-square test p-value for region length", region_length, ":", chi_square_test$p.value))
   
-  # Return the counts for further analysis if needed
   return(counts_vector)
 }
 
