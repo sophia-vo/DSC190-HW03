@@ -103,4 +103,52 @@ table(counts)
 h <- hist(counts, breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8), ylim = c(0, 90))
 text(h$mids,h$counts,labels=h$counts, adj=c(0.5, -0.5))
 
+# Function for analyzing palindromes
+analyze_palindromes <- function(region_length) {
+  # Total number of non-overlapping regions
+  num_regions <- ceiling(sequence_length / region_length)
+  
+  # Define region breaks and count palindromes in each interval
+  region_breaks <- seq(1, sequence_length, by = region_length)
+  
+  # Count occurrences in each interval, using labels = FALSE to get numeric indices
+  region_indices <- cut(hcmv$location, breaks = region_breaks, include.lowest = TRUE, labels = FALSE)
+  counts <- table(region_indices)
+  
+  # Initialize counts vector with zeros for all regions
+  counts_vector <- rep(0, num_regions)
+  
+  # Fill counts_vector based on the numeric indices
+  counts_vector[as.numeric(names(counts))] <- as.vector(counts)
+  
+  # Expected count per region under uniform distribution
+  expected_count <- length(hcmv$location) / num_regions
+  
+  hist(counts_vector, 
+       breaks = seq(-0.5, max(counts_vector) + 0.5, by = 1),  # Set bin width to 1
+       col = "blue", 
+       border = "black", 
+       main = paste("Palindrome Count Distribution for Region Length =", region_length),
+       xlab = "Number of Palindromes per Region", 
+       ylab = "Frequency")
+    abline(v = expected_count, col = "red", lty = "dashed")
+  
+  # Classify regions by number of palindromes
+  classified_counts <- table(cut(counts_vector, breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, Inf), include.lowest = TRUE))
+  print("Classified Counts by Number of Palindromes:")
+  print(classified_counts)
+  
+  # Chi-square test comparing observed to expected uniform distribution
+  chi_square_test <- chisq.test(counts_vector, p = rep(1 / num_regions, num_regions))
+  print(paste("Chi-square test p-value for region length", region_length, ":", chi_square_test$p.value))
+  
+  # Return the counts for further analysis if needed
+  return(counts_vector)
+}
+
+# Analyze for different region lengths
+region_lengths <- c(500, 1000, 5000, 10000, 20000, 50000)
+results <- lapply(region_lengths, analyze_palindromes)
+
+
 # Question 4 - The Biggest Cluster ----------------------------------------
