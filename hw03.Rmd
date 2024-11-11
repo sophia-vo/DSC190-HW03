@@ -45,10 +45,11 @@ To test whether the observed distribution matches a random scatter, we use the K
 
 In the simulations, random palindromic sites are scattered across the DNA sequence, with uniform distribution expected under the null hypothesis. The histograms below visualize the distribution of randomly simulated palindromic sites, which we use as a reference to compare the actual distribution of observed palindrome locations.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.height = 4}
+par(mfrow = c(1, 2), mar = c(5, 4, 4, 2) + 0.1, cex = 0.7)
 
 # Histogram of Real Data Palindromic Site Location
-hist(hcmv$location, breaks = 25, probability = TRUE, col = rgb(1, 0, 0, 0.25),
+hist(hcmv$location, breaks = 15, probability = TRUE, col = rgb(1, 0, 0, 0.25),
      main = "Palindromic Sites of Real Data",
      xlab = "Location in DNA Sequence")
 lines(density(hcmv$location, adjust = 1), col = 2)
@@ -58,10 +59,13 @@ set.seed(123)
 simulated_palindromes <- runif(num_palindromes, min = 1, max = sequence_length)
 
 # Histogram of Simulated Data Palindromic Site Location
-hist(simulated_palindromes, breaks = 25, probability = TRUE, col = rgb(0,0,1,0.25), main = "Palindromic Sites of Simulated Data",
+hist(simulated_palindromes, breaks = 15, probability = TRUE, col = rgb(0,0,1,0.25), main = "Palindromic Sites of Simulated Data",
      xlab = "Location in DNA Sequence")
 lines(density(simulated_palindromes, adjust = 1), col = 4)
-
+par(mfrow = c(1, 1), cex = 1)
+```
+```{r, echo=FALSE, fig.height = 4, fig.width = 6, fig.align='center'}
+par(mfrow = c(1, 1), cex = 0.8)
 # Layered Histogram for Graphical Comparison
 hist(hcmv$location, breaks = 25, probability = TRUE, col = rgb(1, 0, 0, 0.25),
      main = "Palindromic Sites of Real & Simulated Data",
@@ -69,15 +73,17 @@ hist(hcmv$location, breaks = 25, probability = TRUE, col = rgb(1, 0, 0, 0.25),
 lines(density(hcmv$location, adjust = 1), col = 2)
 hist(simulated_palindromes, breaks = 25, probability = TRUE, col = rgb(0,0,1,0.25), add = TRUE)
 lines(density(simulated_palindromes, adjust = 1), col = 4)
-legend("topright", legend = c("Real", "Simulated"), fill = c(rgb(1, 0, 0, 0.25), rgb(0,0,1,0.25)), border = NA)
-
+legend("topright", legend = c("Real", "Simulated"), 
+       fill = c(rgb(1, 0, 0, 0.25), rgb(0,0,1,0.25)), border = NA,
+       cex = 0.8)   # Scale down legend text
+par(mfrow = c(1, 1), cex = 1)
 ```
-
-Additional histograms of repeated random scatters can be found in the Appendix.
+Additional histograms of repeated random scatters can be found in the [Appendix](#appendix).
 
 The histograms for spacing and counts should look similar if the real data follows a random scatter. A notable deviation in real data (e.g., many more intervals with high or low counts than expected in the simulations) would suggest clustering. The spacing and counts histograms can be fund below.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.height=4}
+par(mfrow = c(1, 2), mar = c(5, 4, 4, 2) + 0.1, cex = 0.7)
 # Grouping palindrome location in bins of 1000
 tab <- table(cut(hcmv$location, 
                      breaks = seq(from = 1, to = 230000, by = 1000), 
@@ -109,13 +115,13 @@ simulated_spacings <- diff(sort(simulated_palindromes))
 simulated_counts <- table(cut(simulated_palindromes, breaks = seq(0, sequence_length, by = interval_size), include.lowest = TRUE))
 
 # Spacing histograms
-hist(real_spacing, breaks = 30, col = rgb(1, 0,0,0.25), probability = TRUE, main = "Real & Simulated Data Spacing", xlab = "Spacing")
-hist(unlist(simulated_spacings), breaks = 20, probability = TRUE, col = rgb(0, 0, 1, 0.25), add = TRUE)
+hist(real_spacing, breaks = 10, col = rgb(1, 0,0,0.25), probability = TRUE, main = "Real & Simulated Data Spacing", xlab = "Spacing")
+hist(unlist(simulated_spacings), breaks = 10, probability = TRUE, col = rgb(0, 0, 1, 0.25), add = TRUE)
 lines(density(real_spacing, adjust = 1), col = rgb(1,0,0,0.5))
 lines(density(unlist(simulated_spacings), adjust = 1), col = rgb(0,0,1,0.5))
 legend("topright", legend = c("Real Data", "Simulated Data"),
        fill = c(rgb(1, 0, 0, 0.25), rgb(0, 0, 1, 0.25)), border = NA)
-
+par(mfrow = c(1, 1), cex = 1)
 ```
 
 We calculate the mean and variance of spacings between palindromes in both the real and simulated data.
@@ -130,8 +136,8 @@ library(kableExtra)
 quantitative_summary <- data.frame(
   Statistic = c("Mean Spacing", "Variance of Spacing", "Std Dev of Spacing",
                 "Mean Counts", "Variance of Counts", "Std Dev of Counts"),
-  Real = c(775.5119, 693560.5, 832.8028, 12.72727, 14.58874, 3.819522),
-  Simulated = c(772.527, 477052.8, 690.6901, 12.95455, 10.80736, 3.287455)
+  Real = c(775.512, 693560.5, 832.803, 12.727, 14.589, 3.820),
+  Simulated = c(772.527, 477052.8, 690.690, 12.955, 10.807, 3.287)
 )
 
 # Create and format the table
@@ -142,18 +148,27 @@ kable(quantitative_summary, caption = "Quantitative Comparison of Real vs Simula
 The Kolmogorov-Smirnov (KS) tests were conducted to compare the distributions of real data with simulated data in three different cases: spacing, counts, and palindrome locations. Here are the results for each:
 
 **Spacing (Real vs. Simulated)**
+
 Test Statistic (D): 0.081356
+
 p-value: 0.283
+
 The p-value of 0.283 is greater than the common significance level of 0.05, suggesting that there is no significant difference between the distributions of real and simulated spacing. Thus, we do not have sufficient evidence to reject the null hypothesis, and the real and simulated spacing distributions appear similar.
 
 **Counts (Real vs. Simulated)**
+
 Test Statistic (D): 0.22727
+
 p-value: 0.4767
+
 The p-value of 0.4767 is also greater than 0.05, indicating no significant difference between the distributions of real and simulated counts. The real and simulated counts distributions are similar. 
 
 **Palindrome Locations (Real vs. Simulated)**
+
 Test Statistic (D): 0.040541
+
 p-value: 0.9681
+
 The very high p-value of 0.9681 suggests that there is no significant difference between the distributions of palindrome locations in the real and simulated data. The locations of palindromes in the real data closely resemble those in the simulated data.
 
 ### 2.1.3 Conclusion
@@ -176,12 +191,15 @@ The simulated random distribution in Question 1 will be used to generate spacing
 ### 2.2.2 Analysis
 
 The graphs for the spacing between consecutive palindromes are as follows:
-```{r, echo=FALSE}
+
+```{r, echo=FALSE, fig.height=3}
+par(mfrow = c(1, 2), mar = c(5, 4, 4, 2) + 0.1, cex = 0.7)
+
 real_spacings <- real_spacing
 
 # Histogram of spacing for real and simulated data
 hist(real_spacings, breaks = 15, probability = TRUE, col = rgb(1, 0, 0, 0.25),
-     main = "Spacing Between Consecutive Palindromic Sites",
+     main = "Consecutive Palindromic Sites",
      xlab = "Spacing (Bases)")
 lines(density(real_spacings), col = "red", lwd = 2)
 
@@ -193,12 +211,15 @@ legend("topright", legend = c("Real Data", "Simulated Data"), fill = c(rgb(1, 0,
 boxplot(real_spacings, simulated_spacings,
         names = c("Real Data", "Simulated Data"),
         col = c("red", "blue"),
-        main = "Boxplot of Spacing Between Consecutive Palindromic Sites",
+        main = "Boxplot of Spacing",
         ylab = "Spacing (Bases)")
+par(mfrow = c(1, 1), cex = 1)
 ```
 
 The distributions of the sums of palindrome pairs are as follows:
-```{r, echo=FALSE}
+
+```{r, echo=FALSE, fig.height=3}
+par(mfrow = c(1, 2), mar = c(5, 4, 4, 2) + 0.1, cex = 0.7)
 
 # Calculate pair sums
 real_pair_sums <- real_spacings[-length(real_spacings)] + real_spacings[-1]
@@ -206,7 +227,7 @@ simulated_pair_sums <- simulated_spacings[-length(simulated_spacings)] + simulat
 
 # Histogram of pair sums for real and simulated data
 hist(real_pair_sums, breaks = 15, probability = TRUE, col = rgb(1, 0, 0, 0.25),
-     main = "Sums of Consecutive Pairs of Spacings",
+     main = "Sums of Consecutive Pairs",
      xlab = "Pair Sums (Bases)", ylim = c(0, max(density(simulated_pair_sums)$y)+0.00009))
 lines(density(real_pair_sums), col = "red", lwd = 2)
 
@@ -218,13 +239,15 @@ legend("topright", legend = c("Real Data", "Simulated Data"), fill = c(rgb(1, 0,
 boxplot(real_pair_sums, simulated_pair_sums,
         names = c("Real Data", "Simulated Data"),
         col = c("red", "blue"),
-        main = "Boxplot of Pair Sums of Spacings",
+        main = "Boxplot of Pair Sums",
         ylab = "Pair Sums (Bases)")
-
+par(mfrow = c(1, 1), cex = 1)
 ```
 
 The distributions of the sums of palindrome triplets are as follows:
-```{r, echo=FALSE}
+
+```{r, echo=FALSE, warning=FALSE, fig.height=3}
+par(mfrow = c(1, 2), mar = c(5, 4, 4, 2) + 0.1, cex = 0.7)
 
 # Calculate triplet sums
 real_triplet_sums <- real_spacings[-(length(real_spacings)-1)] +
@@ -236,7 +259,7 @@ simulated_triplet_sums <- simulated_spacings[-(length(simulated_spacings)-1)] +
   simulated_spacings[-c(1, 2)]
 
 # Histogram of triplet sums for real and simulated data
-hist(simulated_triplet_sums, breaks = 15, probability = TRUE, col = rgb(0, 0, 1, 0.25), main = "Sums of Consecutive Triplets of Spacings",
+hist(simulated_triplet_sums, breaks = 15, probability = TRUE, col = rgb(0, 0, 1, 0.25), main = "Sums of Consecutive Triplets",
      xlab = "Triplet Sums (Bases)")
 hist(real_triplet_sums, breaks = 15, probability = TRUE, col = rgb(1, 0, 0, 0.25), add = TRUE)
 lines(density(real_triplet_sums), col = "red", lwd = 2)
@@ -247,23 +270,25 @@ legend("topright", legend = c("Real Data", "Simulated Data"), fill = c(rgb(1, 0,
 boxplot(real_triplet_sums, simulated_triplet_sums,
         names = c("Real Data", "Simulated Data"),
         col = c("red", "blue"),
-        main = "Boxplot of Triplet Sums of Spacings",
+        main = "Boxplot of Triplet Sums",
         ylab = "Triplet Sums (Bases)")
+par(mfrow = c(1, 1), cex = 1)
+
 ```
 
 The Kolmogorov-Smirnov test for spacing yielded a p-value of 0.283, indicating that the observed distribution is consistent with the expected exponential distribution for random scatter. The KS test for pair sums yielded a p-value of 0.09365, the test for triplet sums returned a p-value of 0.1675. These p-values indicate that the observed distributions of pair and triplet sums are consistent with the uniform distribution expected under random scattering.
 
 The Cumulative distribution plot for spacings can be seen below:
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.height = 4, fig.width=5, fig.align='center'}
+par(mfrow = c(1, 1), cex = 0.8)
 # Cumulative distribution plot for spacings
 plot(ecdf(real_spacings), col = "red", main = "Cumulative Distribution of Spacings",
      xlab = "Spacing (Bases)", ylab = "Cumulative Probability", pch = 20, lwd = 1)
 lines(ecdf(simulated_spacings), col = "blue", pch = 20, lwd = 1)
 legend("bottomright", legend = c("Real Data", "Simulated Data"), col = c("red", "blue"), lwd = 2)
-
+par(mfrow = c(1, 1), cex = 1)
 ```
-
 
 ### 2.2.3 Conclusion
 
@@ -284,6 +309,8 @@ To examine palindrome counts in different regions of DNA, we split the DNA seque
 The histograms and Chi-Square Test results are shown below.
 
 ```{r, echo=FALSE, fig.width=7, fig.height=3}
+par(mfrow = c(1, 2), mar = c(5, 4, 4, 2) + 0.1, cex = 0.7)
+
 region_lengths <- c(500, 1000, 5000, 10000, 20000, 50000)
 
 #Chi-Square Test Results Table
@@ -319,7 +346,7 @@ analyze_palindromes <- function(region_length) {
        breaks = seq(-0.5, max(counts_vector) + 0.5, by = 1),
        col = "blue", 
        border = "black", 
-       main = paste("Palindrome Count Distribution for Region Length =", region_length),
+       main = paste("Palindrome Count Distribution for Region  =", region_length),
        xlab = "Number of Palindromes per Region", 
        ylab = "Frequency")
   abline(v = expected_count, col = "red", lty = "dashed")
@@ -454,6 +481,7 @@ We begin with dividing the 229,354 bases into non-overlapping intervals of diffe
    \[
    E_i = \frac{\text{Total Palindromes}}{\text{Total Intervals}}
    \]
+   
    - **Chi-square Goodness-of-Fit Test**: For each interval size, we use the Chi-square test to compare observed vs. expected counts:
      \[
      \chi^2 = \sum_{i=1}^{n} \frac{(O_i - E_i)^2}{E_i}
@@ -467,13 +495,15 @@ We begin with dividing the 229,354 bases into non-overlapping intervals of diffe
 For our analysis, \(\lambda\) is calculated as the **mean number of palindromes per interval**: \(\lambda = \frac{\text{total palindromes}}{\text{number of intervals}}\). This assumption is justified because each interval is of equal length, so we expect a constant rate if the sites are randomly scattered.
      
 If **p-value > \(\alpha\) ** (e.g., \(\alpha\) = 0.05), we *fail to reject* the null hypothesis, suggesting that the observed palindrome counts align with a Poisson distribution. This alignment supports the assumption of random scattering in the data.
+
 If **p-value \(\leq\) \(\alpha\)**, we *reject* the null hypothesis, indicating that palindrome counts likely deviate from a Poisson distribution, suggesting clustering or non-random scatter.
 
 ## 3.2 Analysis
 
 Histograms of palindrome counts for each interval length are as follows:
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.height=4}
+par(mfrow = c(1, 2), mar = c(5, 4, 4, 2) + 0.1, cex = 0.7)
 
 interval_sizes <- c(500, 1000, 5000, 10000)
 
@@ -500,10 +530,6 @@ for (interval_size in interval_sizes) {
                                 breaks = seq(1, sequence_length, by = interval_size), 
                                 include.lowest = TRUE))
   
-  # output results
-  print(interval_size)
-  print(table(real_counts))
-  print(table(simulated_counts))
   
   # Chi-square test on real vs expected under uniform distribution
   expected_count <- rep(num_palindromes * interval_size / sequence_length, length(real_counts))
@@ -571,6 +597,7 @@ for (interval_size in interval_sizes) {
   legend("topright", legend = c("Real Data", "Simulated Data"),
          fill = c(rgb(1, 0, 0, 0.25), rgb(0, 0, 1, 0.25)), border = NA)
 }
+par(mfrow = c(1, 1), cex = 1)
 ```
 
 The summary provided displays results from simulations at four different interval sizes (500, 1000, 5000, and 10,000 base pairs) to test the assumption of a Poisson distribution for palindrome counts across these intervals:
@@ -581,24 +608,27 @@ library(kableExtra)
 
 # Create data frame for results summary
 results_summary <- data.frame(
-  "Interval Size" = c(500, 1000, 5000, 10000),
-  "Mean Real Counts" = c(0.6462882, 1.2925764, 6.4222222, 12.7272727),
-  "Mean Simulated Counts" = c(0.6462882, 1.2925764, 6.4888889, 12.9545455),
-  "Variance Real Counts" = c(0.8943079, 1.6464797, 9.7494949, 14.5887446),
-  "Variance Simulated Counts" = c(0.6229731, 1.1464797, 6.0282828, 10.8073593),
-  "Chi-Square p-Value" = c(0.0004997501, 0.0054972514, 0.0174912544, 0.2938530735),
-  "Expected Count" = c(0.6452907, 1.2905814, 6.4529069, 12.9058137),
-  "Poisson p-Value" = c(1, 1, 1, 1)
+  "Interval" = c(500, 1000, 5000, 10000),
+  "Real Mean" = c(0.646, 1.293, 6.423, 12.727),
+  "Sim Mean" = c(0.646, 1.293, 6.489, 12.955),
+  "Real Var" = c(0.894, 1.646, 9.749, 14.589),
+  "Sim Var" = c(0.623, 1.146, 6.028, 10.807),
+  "Chi-Square" = c(0.0005, 0.0055, 0.0175, 0.2939),
+  "Expected Count" = c(0.6453, 1.2906, 6.4529, 12.9058),
+  "Poisson" = c(1, 1, 1, 1)
 )
 
 # Generate table with kable
-kable(results_summary, caption = "Results Summary for Various Interval Sizes") %>%
+kable(results_summary, caption = "Count Summary for Various Interval Sizes") %>%
   kable_styling(latex_options = c("striped", "hold_position"), full_width = FALSE)
-
 ```
+
 `mean_real_counts` and `mean_sim_counts` show the average number of palindromic sites per interval for real data and randomly scattered data, respectively. These values should be similar if the observed data matches the randomness of the simulation. 
-`var_real_counts` and `var_sim_counts` reflect the variance in the count of palindromic sites per interval for both real and simulated data. In a true Poisson distribution, we expect the mean and variance to be roughly equal, especially in larger intervals where random scatter is more evident. `chi_p_value` assesses how well the observed distribution of palindromic counts aligns with the simulated distribution under the Chi-square test. A low p-value (e.g., <0.05) suggests a statistically significant difference, indicating that the real data distribution may deviate from the expected Poisson scatter.
-Poisson Test p-value:
+
+`var_real_counts` and `var_sim_counts` reflect the variance in the count of palindromic sites per interval for both real and simulated data. In a true Poisson distribution, we expect the mean and variance to be roughly equal, especially in larger intervals where random scatter is more evident.
+
+`chi_p_value` assesses how well the observed distribution of palindromic counts aligns with the simulated distribution under the Chi-square test. A low p-value (e.g., <0.05) suggests a statistically significant difference, indicating that the real data distribution may deviate from the expected Poisson scatter.
+
 `poisson_p_value` shows results from a goodness-of-fit test specifically for the Poisson distribution.
 
 ## 3.3 Conclusion
@@ -616,27 +646,30 @@ The primary goal of this analysis was to assess how the distribution of palindro
 
 There are a few limitations to this analysis. Although we used a range of interval sizes, the choice of breaks was still somewhat arbitrary and might not reflect biologically meaningful regions within the sequence. Our analysis also assumes that palindromic sites are randomly distributed if they don’t serve a functional purpose. However, biological systems are often more organized than random distributions suggest, and factors we didn’t measure—like specific sequence motifs or binding sites—could impact where palindromes occur. Including more variables in future analyses could clarify these relationships and lead to a more accurate model for understanding palindromic site distributions.
 
-# 5. Appendix
+# 5. Appendix {#appendix}
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, fig.height=3}
+par(mfrow = c(1, 2), mar = c(5, 4, 4, 2) + 0.1, cex = 0.7)
 
 simulated_palindromes_repeated <- replicate(4, sort(sample(1:sequence_length, num_palindromes, replace = TRUE)))
 
 # Plots a few random simulations for qualitative comparison
-hist(simulated_palindromes_repeated[,1], breaks = 100, probability = TRUE,
+hist(simulated_palindromes_repeated[,1], breaks = 20, probability = TRUE,
      main = "Simulated Random Scatter of Palindromic Sites",
      xlab = "Location in DNA Sequence")
 lines(density(simulated_palindromes_repeated[,1], adjust = 1))
-hist(simulated_palindromes_repeated[,2], breaks = 100, probability = TRUE,
+hist(simulated_palindromes_repeated[,2], breaks = 20, probability = TRUE,
      main = "Simulated Random Scatter of Palindromic Sites",
      xlab = "Location in DNA Sequence")
 lines(density(simulated_palindromes_repeated[,2], adjust = 1))
-hist(simulated_palindromes_repeated[,3], breaks = 100, probability = TRUE,
+hist(simulated_palindromes_repeated[,3], breaks = 20, probability = TRUE,
      main = "Simulated Random Scatter of Palindromic Sites",
      xlab = "Location in DNA Sequence")
 lines(density(simulated_palindromes_repeated[,3], adjust = 1))
-hist(simulated_palindromes_repeated[,4], breaks = 100, probability = TRUE,
+hist(simulated_palindromes_repeated[,4], breaks = 20, probability = TRUE,
      main = "Simulated Random Scatter of Palindromic Sites",
      xlab = "Location in DNA Sequence")
 lines(density(simulated_palindromes_repeated[,4], adjust = 1))
+par(mfrow = c(1, 1), cex = 1)
+
 ```
