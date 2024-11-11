@@ -467,7 +467,7 @@ kable(palindrome_cluster_results, caption = "Chi-Square Test Results") %>%
 
 As shown in the table above, only the smallest region length (500) showed a significant p-value, while the larger region lengths (1000, 5000, 10000, 20000, and 50000) did not. This suggests that clustering of palindromic sequences exists on a small scale but not over broader intervals. The presence of a high number of palindromic sequences within an interval suggests non-random clustering, which may signal biological importance. Since the statistical analysis shows that the count in this interval is significantly higher than expected by chance, this could imply functional relevance, such as a replication origin.
 
-## 2.5 Discussion
+## 2.5 Recommendations for Biologists
 
 Our statistical analysis can provide insight on how to start experimentally searching for the origin of replication. The results showed a significant clustering of palindromic sequences in small regions (length 500), while larger intervals showed a more uniform distribution. These findings suggest that the origin of replication may lie in one of these dense clusters of palindromic sequences within shorter segments of DNA. Given the statistically significant clustering at region length 500, biologists could begin the experimental search within these smaller regions.
 
