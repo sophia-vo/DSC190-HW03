@@ -53,14 +53,14 @@ legend("topright", legend = c("Real", "Simulated"), fill = c(rgb(1, 0, 0, 0.25),
 
 # Grouping palindrome location in bins of 1000
 tab <- table(cut(hcmv$location, 
-                 breaks = seq(from = 1, to = 230000, by = 1000), 
-                 include.lowest = TRUE))
+                     breaks = seq(from = 1, to = 230000, by = 1000), 
+                     include.lowest = TRUE))
 counts <- as.vector(tab)
 print(table(counts))
 
 sim_tab <- table(cut(simulated_palindromes, 
-                     breaks = seq(from = 1, to = 230000, by = 1000), 
-                     include.lowest = TRUE))
+                 breaks = seq(from = 1, to = 230000, by = 1000), 
+                 include.lowest = TRUE))
 sim_counts <- as.vector(sim_tab)
 print(table(sim_counts))
 
@@ -114,9 +114,94 @@ var_simulated_counts <- var(unlist(simulated_counts))
 std_real_counts <- sqrt(var_real_counts)
 std_simulated_counts <- sqrt(var_simulated_counts)
 
+ks_test_result_spacing <- ks.test(real_spacing, simulated_spacings)
+ks_test_result_counts <- ks.test(real_counts, simulated_counts)
+ks_test_result <- ks.test(hcmv$location, simulated_palindromes)
+
 # Question 2 - Locations and Spacings -------------------------------------
 
-hist(real_spacing, breaks = 30, probability = TRUE, main = "Real Data Spacing", xlab = "Spacing")
+# Refer to above code
+real_spacings <- real_spacing
+simulated_spacings
+
+# Histogram of spacing for real and simulated data
+hist(real_spacings, breaks = 15, probability = TRUE, col = rgb(1, 0, 0, 0.25),
+     main = "Spacing Between Consecutive Palindromic Sites",
+     xlab = "Spacing (Bases)")
+lines(density(real_spacings), col = "red", lwd = 2)
+
+hist(simulated_spacings, breaks = 10, probability = TRUE, col = rgb(0, 0, 1, 0.25), add = TRUE)
+lines(density(simulated_spacings), col = "blue", lwd = 2)
+
+legend("topright", legend = c("Real Data", "Simulated Data"), fill = c(rgb(1, 0, 0, 0.25), rgb(0, 0, 1, 0.25)))
+
+boxplot(real_spacings, simulated_spacings,
+        names = c("Real Data", "Simulated Data"),
+        col = c("red", "blue"),
+        main = "Boxplot of Spacing Between Consecutive Palindromic Sites",
+        ylab = "Spacing (Bases)")
+
+ks.test(real_spacings, simulated_spacings)
+
+# Part B
+
+# Calculate pair sums
+real_pair_sums <- real_spacings[-length(real_spacings)] + real_spacings[-1]
+simulated_pair_sums <- simulated_spacings[-length(simulated_spacings)] + simulated_spacings[-1]
+
+# Histogram of pair sums for real and simulated data
+hist(real_pair_sums, breaks = 15, probability = TRUE, col = rgb(1, 0, 0, 0.25),
+     main = "Sums of Consecutive Pairs of Spacings",
+     xlab = "Pair Sums (Bases)", ylim = c(0, max(density(simulated_pair_sums)$y)+0.00009))
+lines(density(real_pair_sums), col = "red", lwd = 2)
+
+hist(simulated_pair_sums, breaks = 15, probability = TRUE, col = rgb(0, 0, 1, 0.25), add = TRUE)
+lines(density(simulated_pair_sums), col = "blue", lwd = 2)
+
+legend("topright", legend = c("Real Data", "Simulated Data"), fill = c(rgb(1, 0, 0, 0.25), rgb(0, 0, 1, 0.25)))
+
+boxplot(real_pair_sums, simulated_pair_sums,
+        names = c("Real Data", "Simulated Data"),
+        col = c("red", "blue"),
+        main = "Boxplot of Pair Sums of Spacings",
+        ylab = "Pair Sums (Bases)")
+
+ks.test(real_pair_sums, simulated_pair_sums)
+
+# Part C
+
+# Calculate triplet sums
+real_triplet_sums <- real_spacings[-(length(real_spacings)-1)] +
+  real_spacings[-c(1, length(real_spacings))] +
+  real_spacings[-c(1, 2)]
+
+simulated_triplet_sums <- simulated_spacings[-(length(simulated_spacings)-1)] +
+  simulated_spacings[-c(1, length(simulated_spacings))] +
+  simulated_spacings[-c(1, 2)]
+
+# Histogram of triplet sums for real and simulated data
+hist(simulated_triplet_sums, breaks = 15, probability = TRUE, col = rgb(0, 0, 1, 0.25), main = "Sums of Consecutive Triplets of Spacings",
+     xlab = "Triplet Sums (Bases)")
+hist(real_triplet_sums, breaks = 15, probability = TRUE, col = rgb(1, 0, 0, 0.25), add = TRUE)
+lines(density(real_triplet_sums), col = "red", lwd = 2)
+lines(density(simulated_triplet_sums), col = "blue", lwd = 2)
+
+legend("topright", legend = c("Real Data", "Simulated Data"), fill = c(rgb(1, 0, 0, 0.25), rgb(0, 0, 1, 0.25)))
+
+boxplot(real_triplet_sums, simulated_triplet_sums,
+        names = c("Real Data", "Simulated Data"),
+        col = c("red", "blue"),
+        main = "Boxplot of Triplet Sums of Spacings",
+        ylab = "Triplet Sums (Bases)")
+
+ks.test(real_triplet_sums, simulated_triplet_sums)
+
+
+# Cumulative distribution plot for spacings
+plot(ecdf(real_spacings), col = "red", main = "Cumulative Distribution of Spacings",
+     xlab = "Spacing (Bases)", ylab = "Cumulative Probability", pch = 20, lwd = 1)
+lines(ecdf(simulated_spacings), col = "blue", pch = 20, lwd = 1)
+legend("bottomright", legend = c("Real Data", "Simulated Data"), col = c("red", "blue"), lwd = 2)
 
 # Question 3 - Counts -----------------------------------------------------
 
@@ -129,16 +214,6 @@ table(counts)
 
 h <- hist(counts, breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8), ylim = c(0, 90))
 text(h$mids,h$counts,labels=h$counts, adj=c(0.5, -0.5))
-
-region_lengths <- c(500, 1000, 5000, 10000, 20000, 50000)
-
-#Chi-Square Test Results Table
-chi_square_results <- data.frame(
-  `Region Length` = integer(),
-  `Chi-Square Statistic` = numeric(),
-  `p-value` = numeric(),
-  `Interpretation` = character()
-)
 
 # Function for analyzing palindromes
 analyze_palindromes <- function(region_length) {
@@ -172,23 +247,12 @@ analyze_palindromes <- function(region_length) {
   
   # Classify regions by number of palindromes
   classified_counts <- table(cut(counts_vector, breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, Inf), include.lowest = TRUE))
+  print("Classified Counts by Number of Palindromes:")
+  print(classified_counts)
   
   # Chi-square test comparing observed to expected uniform distribution
-  chi_square_test <- chisq.test(counts_vector, p = rep(1 / num_regions, num_regions), simulate.p.value = TRUE)
-  
-  interpretation <- ifelse(chi_square_test$p.value < 0.001, 
-                           "Significant",
-                           "Not Significant")
-  
-  chi_square_results <<- rbind(
-    chi_square_results,
-    data.frame(
-      `Region Length` = region_length,
-      `Chi-Square Statistic` = chi_square_test$statistic,
-      `p-value` = chi_square_test$p.value,
-      `Interpretation` = interpretation
-    )
-  )
+  chi_square_test <- chisq.test(counts_vector, p = rep(1 / num_regions, num_regions))
+  print(paste("Chi-square test p-value for region length", region_length, ":", chi_square_test$p.value))
   
   return(counts_vector)
 }
@@ -200,61 +264,44 @@ results <- lapply(region_lengths, analyze_palindromes)
 
 # Question 4 - The Biggest Cluster ----------------------------------------
 
-# Region lengths to test
-region_lengths <- c(500, 1000, 5000, 10000, 20000, 50000)
-
-# Data frame to store analysis results
-palindrome_cluster_results <- data.frame(
-  `Region Length` = integer(),
-  `Max Count` = numeric(),
-  `Max Interval` = integer(),
-  `Expected Count` = numeric(),
-  `Chi-Square p-value` = numeric(),
-  `Interpretation` = character()
-)
-
-# Function to analyze palindromic clusters and store results
+# Function to identify high palindrome density regions at different interval lengths
 analyze_palindromic_clusters <- function(region_length) {
   # Define the region breaks
   region_breaks <- seq(1, sequence_length, by = region_length)
-  num_intervals <- length(region_breaks) - 1
   
-  # Initialize counts vector for each interval
+  # Initialize counts for each interval to zero
+  num_intervals <- length(region_breaks) - 1
   counts_vector <- rep(0, num_intervals)
   
-  # Count palindromes in each interval
+  # Count palindromes in each interval, using labels = FALSE to get numeric indices
   region_indices <- cut(hcmv$location, breaks = region_breaks, include.lowest = TRUE, labels = FALSE)
   counts <- table(region_indices)
+  
+  # Populate counts_vector with actual counts based on region indices
   counts_vector[as.numeric(names(counts))] <- as.vector(counts)
   
-  # Find the maximum palindrome count and its interval
+  # Find the interval with the highest palindrome count
   max_count <- max(counts_vector)
   max_interval <- which(counts_vector == max_count)
   
   # Expected count per interval under uniform distribution
   expected_count <- length(hcmv$location) / num_intervals
   
-  # Chi-square test for uniform distribution
-  chi_square_test <- chisq.test(counts_vector, p = rep(1 / num_intervals, num_intervals), simulate.p.value = TRUE)
-  interpretation <- ifelse(chi_square_test$p.value < 0.001, 
-                           "Significant", 
-                           "Not Significant")
+  # Print the interval and count information
+  print(paste("Region length:", region_length))
+  print(paste("Max palindrome count:", max_count))
+  print(paste("Expected count:", expected_count))
+  print(paste("Interval with max count:", max_interval))
   
-  # Append the results to the palindrome_cluster_results data frame
-  palindrome_cluster_results <<- rbind(
-    palindrome_cluster_results,
-    data.frame(
-      `Region Length` = region_length,
-      `Max Count` = max_count,
-      `Max Interval` = max_interval,
-      `Expected Count` = expected_count,
-      `Chi-Square p-value` = chi_square_test$p.value,
-      `Interpretation` = interpretation
-    )
-  )
+  # Statistical test to check if max count significantly deviates from expectation
+  chi_square_test <- chisq.test(counts_vector, p = rep(1 / num_intervals, num_intervals), simulate.p.value = TRUE)
+  print(paste("Chi-square p-value for region length", region_length, ":", chi_square_test$p.value))
+  
+  return(list(max_count = max_count, max_interval = max_interval, p_value = chi_square_test$p.value))
 }
 
-# Analyze for each region length and store results
+# Analyze at multiple region lengths
+region_lengths <- c(500, 1000, 2000, 5000)
 results <- lapply(region_lengths, analyze_palindromic_clusters)
 
 # Advanced Analysis -------------------------------------------------------
@@ -278,7 +325,7 @@ for (interval_size in interval_sizes) {
   real_counts <- table(cut(hcmv$location, 
                            breaks = seq(from = 1, to = sequence_length, by = interval_size), 
                            include.lowest = TRUE))
-  
+
   # Simulated data: group counts by interval
   simulated_counts <- table(cut(simulated_palindromes, 
                                 breaks = seq(1, sequence_length, by = interval_size), 
@@ -326,7 +373,7 @@ for (interval_size in interval_sizes) {
          xlim = c(-1,x_max))
     hist(observed_counts, breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8), col = rgb(1, 0, 0, 0.25), probability = TRUE, add = TRUE)
   } else if (interval_size == 1000) {
-    # Plot the histograms with the same y-axis limit
+  # Plot the histograms with the same y-axis limit
     hist(simulated_counts, ylim = c(0,0.4), breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8), probability = TRUE, col = rgb(0, 0, 1, 0.25), main = paste("Counts Distribution for Interval Size:", interval_size),
          xlab = "Counts per Interval")
     hist(counts, breaks = c(-1, 0, 1, 2, 3, 4, 5, 6, 7, 8), probability = TRUE, col = rgb(1, 0, 0, 0.25), add = TRUE)
