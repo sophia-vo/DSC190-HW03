@@ -47,7 +47,7 @@ To test whether the observed distribution matches a random scatter, we use the K
 
 In the simulations, random palindromic sites are scattered across the DNA sequence, with uniform distribution expected under the null hypothesis. The histograms below visualize the distribution of randomly simulated palindromic sites, which we use as a reference to compare the actual distribution of observed palindrome locations.
 
-```{r, echo=FALSE, fig.height = 4}
+```{r, echo=FALSE, fig.height = 3.5}
 par(mfrow = c(1, 2), mar = c(5, 4, 4, 2) + 0.1, cex = 0.7)
 
 # Histogram of Real Data Palindromic Site Location
@@ -678,3 +678,4 @@ lines(density(simulated_palindromes_repeated[,4], adjust = 1))
 par(mfrow = c(1, 1), cex = 1)
 
 ```
+
