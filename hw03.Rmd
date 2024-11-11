@@ -17,13 +17,15 @@ interval_size <- 1000
 
 ## Contribution
 
+Student 1 was responsible for Analysis Questions 3, 4, and 5. Student 2 was responsible for Analysis Questions 1, 2 and the Advanced Analysis. Both Student 1 and 2 were responsible for the Introduction and Discussion.
+
 # 1. Introduction
 
 Cytomegalovirus (CMV) is a complex DNA virus with a genome comprising 229,354 base pairs. DNA sequences contain many patterns, and some of these patterns may flag important sites on the DNA, such as the origin of replication. The origin of replication is special patterns in the virus’ DNA that contains instructions for its reproduction. To develop strategies for combating the virus, scientists want study the way in which the virus replicates. Our analysis uses data from the DNA sequence of CMV that was published in 1990 (Chee etal.) that is 229,354 letters long. Leung et al. (1991) implemented search algorithms to screen the sequence for many types of patterns. Altogether, 296 palindromes were found that were at least 10 letters long, with the longest being 18 letters.
 
-The primary goal of this statistical analysis is to assess how the distribution of palindromes deviates from a uniform scatter across the DNA sequence and if any clusters are due to random chance. We found that [**results of section 2.1 and 2.2**]. Analysis of palindrome counts revealed that shorter intervals had greater variability than larger intervals and that certain region lengths (500, 20000, 50000) showed clustering, suggesting that these areas are less likely to occur by random chance. Further exploration of these clusters showed statistically significant clustering at region length 500.
+The primary goal of this statistical analysis is to assess how the distribution of palindromes deviates from a uniform scatter across the DNA sequence and if any clusters are due to random chance. We found that palindromic sequences are uniformly distributed across the genome, with no significant variability in the number of palindromes observed in different regions. Analysis of palindrome counts revealed that shorter intervals had greater variability than larger intervals and that certain region lengths (500, 20000, 50000) showed clustering, suggesting that these areas are less likely to occur by random chance. Further exploration of these clusters showed statistically significant clustering at region length 500.
 
-The report is structured as follows: Section 1 introduces this study's objectives, background, and key questions, Section 2 analyzes the randomness of palindrome distribution, spatial patterns of palindromic sequences, palindrome counts in different genome regions, and the presence of significant clusters. Section 3 explores [**advanced analysis topic**]. Section 4 summarizes the findings and discusses possible methods for searching for the origin of replication.
+The report is structured as follows: Section 1 introduces this study's objectives, background, and key questions, Section 2 analyzes the randomness of palindrome distribution, spatial patterns of palindromic sequences, palindrome counts in different genome regions, and the presence of significant clusters. Section 3 explores the robustness of statistical assumptions in studying palindrome distribution across the CMV DNA sequence. Section 4 summarizes the findings and discusses possible methods for searching for the origin of replication.
 
 # 2. Analysis
 
@@ -192,7 +194,7 @@ The simulated random distribution in Question 1 will be used to generate spacing
 
 The graphs for the spacing between consecutive palindromes are as follows:
 
-```{r, echo=FALSE, fig.height=3}
+```{r, echo=FALSE, fig.height=3.5}
 par(mfrow = c(1, 2), mar = c(5, 4, 4, 2) + 0.1, cex = 0.7)
 
 real_spacings <- real_spacing
@@ -218,7 +220,7 @@ par(mfrow = c(1, 1), cex = 1)
 
 The distributions of the sums of palindrome pairs are as follows:
 
-```{r, echo=FALSE, fig.height=3}
+```{r, echo=FALSE, fig.height=3.5}
 par(mfrow = c(1, 2), mar = c(5, 4, 4, 2) + 0.1, cex = 0.7)
 
 # Calculate pair sums
@@ -246,7 +248,7 @@ par(mfrow = c(1, 1), cex = 1)
 
 The distributions of the sums of palindrome triplets are as follows:
 
-```{r, echo=FALSE, warning=FALSE, fig.height=3}
+```{r, echo=FALSE, warning=FALSE, fig.height=3.5}
 par(mfrow = c(1, 2), mar = c(5, 4, 4, 2) + 0.1, cex = 0.7)
 
 # Calculate triplet sums
@@ -346,7 +348,7 @@ analyze_palindromes <- function(region_length) {
        breaks = seq(-0.5, max(counts_vector) + 0.5, by = 1),
        col = "blue", 
        border = "black", 
-       main = paste("Palindrome Count Distribution for Region  =", region_length),
+       main = paste("Count Distribution for Region  =", region_length),
        xlab = "Number of Palindromes per Region", 
        ylab = "Frequency")
   abline(v = expected_count, col = "red", lty = "dashed")
@@ -641,8 +643,11 @@ This implies that palindrome distribution in the DNA sequence may show clusterin
 
 # 4. Discussion
 
+The primary goal of this analysis was to investigate whether the distribution of palindromes in the CMV DNA sequence deviates from a uniform scatter or if any clusters are due to random chance, comparing the actual palindrome distribution to simulated random scatterings. We examined the spacing and counts of palindromic sequences across DNA intervals, looking for potential clusters that might indicate functional regions like replication origins. To do this, we simulated random palindrome locations, compared them to the real data, and used Chi-square and Poisson tests to assess how well the observed distribution fit with the expected random pattern across different interval sizes.
 
-The primary goal of this analysis was to assess how the distribution of palindromes deviates from a uniform scatter across the DNA sequence and if any clusters are due to random chance, comparing real palindromic site distributions against simulated random scatterings. We examined the spacing and counts of palindromic sequences within DNA intervals, aiming to identify potential clusters or deviations from uniform distribution that could point to functional significance, such as replication origins. Our approach included simulating palindrome locations, comparing observed data to uniform distributions, and using Chi-square and Poisson tests to examine fit across different interval sizes. We found that: ___.
+Our findings showed that, overall, the distribution of palindromic sequences in the CMV genome closely resembled a random scatter, with no large-scale clusters that might suggest specific functional regions. The Kolmogorov-Smirnov tests, comparing real data to random simulations, produced high p-values, indicating no significant deviations from randomness. However, when we looked at smaller intervals (like 500 base pairs), we found some significant clustering of palindromes. This was confirmed by Chi-square tests, which showed a notable difference in palindrome counts compared to the random model. These results suggest that, while the overall genome-wide distribution of palindromes appears random, there are localized clusters that could have functional significance, possibly related to replication origins or other regulatory elements.
+
+Additionally, our analysis highlighted the importance of choosing the right interval size for statistical tests. Smaller intervals (like 500 or 1000 bases) revealed significant deviations from uniformity, suggesting potential clusters of palindromes, whereas larger intervals (e.g., 5000 or 10,000 bases) seemed to follow a more random distribution. This suggests that smaller intervals can uncover finer details of biological patterns, while larger ones smooth out small-scale fluctuations and make the data look more random. The significant clustering of palindromes in the 500-base pair intervals could provide clues for locating the origin of replication in CMV, as replication origins often show specific sequence patterns. These findings could guide future research on identifying replication origins or other important biological sites.
 
 There are a few limitations to this analysis. Although we used a range of interval sizes, the choice of breaks was still somewhat arbitrary and might not reflect biologically meaningful regions within the sequence. Our analysis also assumes that palindromic sites are randomly distributed if they don’t serve a functional purpose. However, biological systems are often more organized than random distributions suggest, and factors we didn’t measure—like specific sequence motifs or binding sites—could impact where palindromes occur. Including more variables in future analyses could clarify these relationships and lead to a more accurate model for understanding palindromic site distributions.
 
